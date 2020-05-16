@@ -10,27 +10,32 @@ meta_map = [{
 	'key': 'name',
 	'required': True,
 	'default': None,
-	'prompt': 'Enter workout name: '
+	'prompt': 'Enter workout name: ',
+	'type': 'string'
 }, {
 	'key': 'type',
 	'required': True,
 	'default': None,
-	'prompt': 'Enter workout type (strengh/cardio/mobility): '
+	'prompt': 'Enter workout type (strengh/cardio/mobility): ',
+	'type': 'string'
 }, {
 	'key': 'duration',
 	'required': False,
 	'default': None,
-	'prompt': 'Enter workout duration in minutes: '
+	'prompt': 'Enter workout duration in minutes: ',
+	'type': 'string'
 }, {
 	'key': 'date',
 	'required': True,
 	'default': current_date,
-	'prompt': 'Enter workout date (yyyy-mm-dd): '
+	'prompt': 'Enter workout date (yyyy-mm-dd): ',
+	'type': 'date'
 }, {
 	'key': 'comments',
 	'required': False,
 	'default': None,
-	'prompt': 'Enter workout comments if any: '
+	'prompt': 'Enter workout comments if any: ',
+	'type': 'string'
 }]
 
 
@@ -54,10 +59,13 @@ def prompt(workout):
 				elif not value and meta['default']:
 					value = meta['default']
 
-			workout[meta['key']] = value
+			if meta['type'] == date:
+				workout[meta['key']] = datetime.strptime(value, '%Y-%m-%d')
+			else:
+				workout[meta['key']] = value
 
 	workout['creation_date'] = current_date
-	workout['creation_date'] = current_date
+	workout['date_str'] = current_date_str
 
 	return workout
 
