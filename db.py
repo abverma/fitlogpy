@@ -15,7 +15,7 @@ class Connection():
 
 	def __init__(self, host=HOST, port=PORT):
 		try:
-			logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+			logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 
 			self.client = MongoClient(host=HOST, port=PORT, username=USER, password=PWD, retryWrites=False, authSource=DB_NAME)
 
@@ -34,11 +34,20 @@ class Connection():
 			logging.debug('Error in inserting workout')
 			logging.debug(e)
 
-	def find_workout(self, workout, sort):
+	def delete_workout(self, workout):
+		try:
+			db = self.client[DB_NAME]
+			db.workouts.delete_one({'_id': workout['_id']})
+			logging.debug('Workout deleted!')	
+		except Error as e:
+			logging.debug('Error in deleting workout')
+			logging.debug(e)
+
+	def find_workout(self, workout, sort, limit = 10):
 		try:
 			logging.debug(workout)
 			db = self.client[DB_NAME]
-			result = db.workouts.find(workout, limit = 10, sort = sort)
+			result = db.workouts.find(workout, sort = sort, limit = limit)
 			return result
 		except Error as e:
 			logging.debug('Error in searching workout')

@@ -38,6 +38,25 @@ meta_map = [{
 	'type': 'string'
 }]
 
+prompt_by_type = {
+	'strength': [{
+		'name': 'category',
+		'prompt': 'Enter category (bodyweight/weights): ',
+		'required': False
+	}, {
+		'name': 'split',
+		'prompt': 'Enter split (full body/upper/lower/push/pull): ',
+		'required': False
+	}, {
+		'name': 'upper_volume',
+		'prompt': 'Average upper body volume : ',
+		'required': False
+	}, {
+		'name': 'lower_volume',
+		'prompt': 'Average lower body volume : ',
+		'required': False
+	}]
+}
 
 def clear():
 	call(["clear"])
@@ -51,6 +70,11 @@ def prompt(workout):
 				value = input(meta['prompt'])
 			else:
 				value = meta['default']
+
+			if meta['key'] == 'type' and value in prompt_by_type:
+				for strenghtMeta in prompt_by_type[value]:
+					typeValue = input(strenghtMeta['prompt'])
+					workout[strenghtMeta['name']] = typeValue
 
 			if meta['required']:
 				if not value and not meta['default']:
@@ -71,12 +95,26 @@ def prompt(workout):
 
 def save_workout(workout):
 	con.insert_workout(workout)
+	print('New workout saved.')
+
+def delete_workout(workout):
+	con.delete_workout(workout)
+	print('Workout deleted')
+
+def copy_workout(workout):
+	del workout['_id']
+	workout['date'] = current_date
+	workout['creation_date'] = current_date
+	con.insert_workout(workout)
+	print('Workout copy created')
 
 def print_result(result):
 	result_str = ''
 	idx = 0
-	
+	workout_list = []
 	for rec in result:
+		workout_list.insert(idx, rec)
+
 		idx += 1
 		result_str += str(idx) + '. '
 
@@ -100,9 +138,40 @@ def print_result(result):
 	print('-'*20)
 	print(result_str)
 
-def search_workout(workout, sort):
-	result = con.find_workout(workout, sort)
-	print_result(result)
+	return workout_list
+
+def take_action(result):
+
+	
+	idx = input('Choose workout # to copy/delete/edit: ')
+
+	if not idx:
+		return
+	else: 
+		idx = int(idx) - 1
+
+		print(idx)
+
+		workout = result[idx]
+
+		print(workout)
+
+		choice = input('Choose one of the following options\n1. Copy \n2. Delete \n3. Edit\n')
+
+		if not choice:
+			return 
+		elif choice == '1':
+			copy_workout(workout)
+		elif choice == '2':
+			ans = input('Are you sure? (y/n): ')
+			if ans.lower() == 'y':
+				delete_workout(workout)
+
+def search_workout(workout, sort = None, limit = 0):
+	print('Searching...')
+	result = con.find_workout(workout, sort, limit)
+	workout_list = print_result(result)
+	take_action(workout_list)
 
 
 def search_prompt():
@@ -120,7 +189,7 @@ print('#'*40)
 
 con = Connection()
 
-choice = input('Choose one of the following options\n1. Enter new workout\n2. Search workout\n3. List last 10 workouts\n')
+choice = input('Choose one of the following options\n1. Enter new workout\n2. Search workout\n3. List last 5 workouts\n')
 
 clear()
 
@@ -130,9 +199,9 @@ if choice == '1':
 elif choice == '2':
 	query = search_prompt()
 	if query:
-		search_workout(query, [])
+		search_workout(query)
 elif choice == '3':
-	search_workout({}, [('date', pymongo.DESCENDING)])
+	search_workout({}, [('date', pymongo.DESCENDING)], 5)
 else:
 	print('Invalid choice')
 
