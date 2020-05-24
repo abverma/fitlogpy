@@ -55,6 +55,10 @@ prompt_by_type = {
 		'name': 'lower_volume',
 		'prompt': 'Average lower body volume : ',
 		'required': False
+	}, {
+		'name': 'core_volume',
+		'prompt': 'Average core volume : ',
+		'required': False
 	}]
 }
 
@@ -83,7 +87,7 @@ def prompt(workout):
 				elif not value and meta['default']:
 					value = meta['default']
 
-			if meta['type'] == date:
+			if meta['type'] == 'date':
 				workout[meta['key']] = datetime.strptime(value, '%Y-%m-%d')
 			else:
 				workout[meta['key']] = value
